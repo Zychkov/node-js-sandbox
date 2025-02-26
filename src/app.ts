@@ -7,7 +7,10 @@ import {UserController} from './controllers/user.controller';
 import 'source-map-support/register';
 import {authorizationChecker} from './utils/jwt';
 
-dotenv.config();
+dotenv.config({
+    override: true,
+    path: '.env'
+});
 
 const app = express();
 

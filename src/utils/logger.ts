@@ -1,5 +1,5 @@
-import { Logger, ILogObj } from "tslog";
-import { appendFileSync, existsSync, mkdirSync } from "fs";
+import {Logger, ILogObj} from "tslog";
+import {appendFileSync, existsSync, mkdirSync} from "fs";
 
 const logger = new Logger<ILogObj>({
     name: "TS logger",
@@ -15,7 +15,7 @@ logger.attachTransport((logObj) => {
     const logFile = "app.log";
 
     if (!existsSync(logDir)) {
-        mkdirSync(logDir, { recursive: true });
+        mkdirSync(logDir, {recursive: true});
     }
 
     appendFileSync(`${logDir}/${logFile}`, JSON.stringify(logObj) + "\n");

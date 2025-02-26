@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "dev": "nodemon src/server.ts --enable-source-maps --experimental-specifier-resolution=node",
+    "dev": "nodemon -r dotenv/config src/server.ts --enable-source-maps --experimental-specifier-resolution=node",
     "start": "node dist/server.js",
     "build": "tsc"
   },

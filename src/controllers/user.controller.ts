@@ -68,6 +68,7 @@ export class UserController {
     }
 
     @Get("/")
+    @Authorized()
     async getAllUsers(): Promise<UserDTO[]> {
         return (await this.userService.getAllUsers()).map(user => userToDTO(user));
     }
