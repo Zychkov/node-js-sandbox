@@ -6,7 +6,7 @@ import {Role} from "../enums/role.enum";
 
 export class UserDTO {
     @Expose({name: "id"})
-    @Transform(({obj}) => obj._id ? obj._id.toString() : null) // Преобразуем _id в строку
+    @Transform(({obj}) => obj._id ? obj._id.toString() : null)
     _id?: string;
 
     @Expose()

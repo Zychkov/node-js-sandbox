@@ -1,4 +1,4 @@
-import {Collection} from "mongodb";
+import {Collection, ObjectId} from "mongodb";
 import {Database} from "../utils/database";
 import {User} from "../models/user.model";
 
@@ -15,7 +15,11 @@ export class UserDAO {
     }
 
     async findById(id: string): Promise<User | null> {
-        return this.collection.findOne({id});
+        if (!ObjectId.isValid(id)) {
+            throw new Error("Invalid ID format");
+        }
+
+        return await this.collection.findOne({_id: new ObjectId(id)} as any);
     }
 
     async findByEmail(email: string): Promise<User | null> {

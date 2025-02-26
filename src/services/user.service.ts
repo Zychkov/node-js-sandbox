@@ -7,12 +7,16 @@ export class UserService {
     private userDAO = new UserDAO();
 
     async register(userData: Partial<User>): Promise<User> {
-        const newUser = { ...userData, status: UserStatus.ACTIVE, role: Role.USER, friends: [] } as User;
+        const newUser = {...userData, status: UserStatus.ACTIVE, role: Role.USER, friends: []} as User;
         return this.userDAO.create(newUser);
     }
 
     async getAllUsers(): Promise<User[]> {
         return this.userDAO.findAll();
+    }
+
+    async getUserById(id: string): Promise<User | null> {
+        return this.userDAO.findById(id);
     }
 
     async getUserByEmail(email: string): Promise<User | null> {

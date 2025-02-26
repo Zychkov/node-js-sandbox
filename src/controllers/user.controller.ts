@@ -1,13 +1,18 @@
 import {
-    JsonController,
+    Authorized,
     Body,
-    Post,
-    Get,
-    Put,
+    CurrentUser,
     Delete,
-    Param,
+    Get,
     HttpCode,
-    UseAfter, InternalServerError, NotFoundError
+    InternalServerError,
+    JsonController,
+    NotFoundError,
+    Param,
+    Post,
+    Put,
+    UnauthorizedError,
+    UseAfter
 } from "routing-controllers";
 import {UserService} from "../services/user.service";
 import {User} from "../models/user.model";
@@ -17,6 +22,8 @@ import logger from "../utils/logger";
 import {validateDTO} from "../utils/validator";
 import {UserCreatedResponse} from "../models/response/user-created.response";
 import {UserDTO, userToDTO} from "../models/dto/user.dto";
+import {generateToken} from "../utils/jwt";
+import {Role} from "../models/enums/role.enum";
 
 @JsonController("/users")
 @UseAfter(ErrorHandlerMiddleware)
@@ -48,13 +55,38 @@ export class UserController {
         }
     }
 
+    @Post("/login")
+    async login(@Body() loginData: { email: string; password: string }) {
+        const user = await this.userService.getUserByEmail(loginData.email);
+
+        if (!user || user.password !== loginData.password) {
+            throw new UnauthorizedError("Invalid email or password.");
+        }
+
+        const token = generateToken(user);
+        return {token};
+    }
+
     @Get("/")
-    async getAllUsers() {
-        return this.userService.getAllUsers();
+    async getAllUsers(): Promise<UserDTO[]> {
+        return (await this.userService.getAllUsers()).map(user => userToDTO(user));
+    }
+
+    @Get("/me")
+    @Authorized(Role.ADMIN)
+    async getCurrentUser(@CurrentUser() id: string) {
+        const user = await this.userService.getUserById(id);
+
+        if (user) {
+            return userToDTO(user)
+        } else {
+            throw new InternalServerError("Something wrong");
+        }
     }
 
     @Get("/:email")
-    async getUser(@Param("email") email: string):Promise<UserDTO> {
+    @Authorized()
+    async getUser(@Param("email") email: string): Promise<UserDTO> {
         const user = await this.userService.getUserByEmail(email);
         logger.debug(`Requested user with id: ${user?._id}`);
 
