@@ -99,12 +99,29 @@ export class UserController {
     }
 
     @Put("/:email")
+    @Authorized()
     async updateUser(@Param("email") email: string, @Body() updateData: Partial<User>) {
+        //TODO
         return this.userService.updateUser(email, updateData);
     }
 
     @Delete("/:email")
+    @Authorized()
     async deleteUser(@Param("email") email: string) {
+        //TODO
         return this.userService.deleteUser(email);
+    }
+
+    @Post("/friends")
+    @Authorized()
+    async addFriend(@CurrentUser() userId: string, @Body() friendData: { friendId: string }): Promise<UserDTO> {
+        const friend = await this.userService.getUserById(friendData.friendId);
+
+        if (!friend) {
+            throw new NotFoundError(`Friend with id ${friendData.friendId} not found.`)
+        }
+
+        const updatedUser = await this.userService.addFriend(userId, friendData.friendId);
+        return userToDTO(updatedUser);
     }
 }

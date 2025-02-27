@@ -29,7 +29,7 @@ export class UserDTO {
 
     @Expose()
     @Transform(({value}) => value ? value.map((id: ObjectId) => id.toString()) : [])
-    friends?: ObjectId[];
+    friends!: ObjectId[];
 }
 
 export function userToDTO(user: User): UserDTO {

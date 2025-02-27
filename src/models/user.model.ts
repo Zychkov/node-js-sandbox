@@ -39,5 +39,5 @@ export class User {
 
     @IsArray()
     @IsOptional()
-    friends?: ObjectId[];
+    friends!: ObjectId[];
 }

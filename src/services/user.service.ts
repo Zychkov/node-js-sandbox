@@ -2,6 +2,8 @@ import {UserStatus} from "../models/enums/user-status.enum";
 import {Role} from "../models/enums/role.enum";
 import {UserDAO} from "../dao/user.dao";
 import {User} from "../models/user.model";
+import {ObjectId} from "mongodb";
+import {NotFoundError} from "routing-controllers";
 
 export class UserService {
     private userDAO = new UserDAO();
@@ -33,5 +35,16 @@ export class UserService {
 
     async deleteUser(email: string): Promise<boolean> {
         return this.userDAO.delete(email);
+    }
+
+    async addFriend(userId: string, friendId: string): Promise<User> {
+        const user = await this.userDAO.findById(userId);
+        if (!user) {
+            throw new NotFoundError(`User not found.`);
+        }
+
+        user.friends.push(new ObjectId(friendId));
+
+        return this.userDAO.updateUserById(user);
     }
 }
