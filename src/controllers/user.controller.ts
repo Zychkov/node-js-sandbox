@@ -124,4 +124,17 @@ export class UserController {
         const updatedUser = await this.userService.addFriend(userId, friendData.friendId);
         return userToDTO(updatedUser);
     }
+
+    @Delete("/friends/:friendId")
+    @Authorized()
+    async removeFriend(@CurrentUser() userId: string, @Param("friendId") friendId: string): Promise<UserDTO> {
+        const friend = await this.userService.getUserById(friendId);
+
+        if (!friend) {
+            throw new NotFoundError(`Friend with id ${friendId} not found.`);
+        }
+
+        const updatedUser = await this.userService.removeFriend(userId, friendId);
+        return userToDTO(updatedUser);
+    }
 }

@@ -35,9 +35,14 @@ export class UserDAO {
         return this.collection.find().toArray();
     }
 
-    async update(email: string, updateData: Partial<User>): Promise<User | null> {
+    async updateByEmail(email: string, updateData: Partial<User>): Promise<User | null> {
         await this.collection.updateOne({email}, {$set: updateData});
         return this.findByEmail(email);
+    }
+
+    async updateById(id: string, updateData: Partial<User>): Promise<User | null> {
+        await this.collection.updateOne({_id: new ObjectId(id)} as any, {$set: updateData});
+        return this.findById(id);
     }
 
     async updateUserById(updateData: Partial<User>): Promise<User> {

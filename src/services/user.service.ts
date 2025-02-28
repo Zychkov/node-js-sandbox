@@ -30,7 +30,7 @@ export class UserService {
     }
 
     async updateUser(email: string, updateData: Partial<User>): Promise<User | null> {
-        return this.userDAO.update(email, updateData);
+        return this.userDAO.updateByEmail(email, updateData);
     }
 
     async deleteUser(email: string): Promise<boolean> {
@@ -46,5 +46,17 @@ export class UserService {
         user.friends.push(new ObjectId(friendId));
 
         return this.userDAO.updateUserById(user);
+    }
+
+    async removeFriend(userId: string, friendId: string): Promise<User> {
+        const user = await this.getUserById(userId);
+        if (!user) {
+            throw new NotFoundError("User not found.");
+        }
+
+        user.friends = user.friends?.filter(id => id.toString() !== friendId) || [];
+
+        await this.userDAO.updateById(userId, { friends: user.friends });
+        return user;
     }
 }
