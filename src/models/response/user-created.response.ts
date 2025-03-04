@@ -1,3 +1,7 @@
-export interface UserCreatedResponse {
-    message: string;
+import {IsString} from "class-validator";
+
+export class UserCreatedResponse {
+
+    @IsString()
+    message!: string;
 }

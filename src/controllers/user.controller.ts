@@ -20,10 +20,12 @@ import {UserAlreadyExistsError} from "../errors/user-already-exists.error";
 import {ErrorHandlerMiddleware} from "../middlewares/error-handler.middleware";
 import logger from "../utils/logger";
 import {validateDTO} from "../utils/validator";
-import {UserCreatedResponse} from "../models/response/user-created.response";
 import {UserDTO, userToDTO} from "../models/dto/user.dto";
 import {generateToken} from "../utils/jwt";
 import {Role} from "../models/enums/role.enum";
+import {OpenAPI, ResponseSchema} from "routing-controllers-openapi";
+import {RegisterUserDTO} from "../models/dto/register-user.dto";
+import {UserCreatedResponse} from "../models/response/user-created.response";
 
 @JsonController("/users")
 @UseAfter(ErrorHandlerMiddleware)
@@ -32,7 +34,25 @@ export class UserController {
 
     @Post("/register")
     @HttpCode(201)
-    async register(@Body() userData: Partial<User>): Promise<UserCreatedResponse> {
+    @ResponseSchema(UserCreatedResponse)
+    @OpenAPI({
+        summary: "Register a new user",
+        responses: {
+            '409': {
+                content: {
+                    "application/json": {
+                        schema: {$ref: "#/components/schemas/ErrorResponse"},
+                        example: {
+                            name: "UserAlreadyExistsError",
+                            message: "User with email email@example.com already exists.",
+                            statusCode: 409
+                        }
+                    }
+                }
+            }
+        }
+    })
+    async register(@Body() userData: RegisterUserDTO): Promise<UserCreatedResponse> {
         const userInstance = await validateDTO(User, userData);
 
         let existingUser = await this.userService.getUserByEmail(userInstance.email);
@@ -114,6 +134,7 @@ export class UserController {
 
     @Post("/friends")
     @Authorized()
+    @OpenAPI({summary: "Add the friend", description: "Allows a user to add a friend by ID"})
     async addFriend(@CurrentUser() userId: string, @Body() friendData: { friendId: string }): Promise<UserDTO> {
         const friend = await this.userService.getUserById(friendData.friendId);
 
