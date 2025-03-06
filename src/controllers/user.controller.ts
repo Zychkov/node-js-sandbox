@@ -10,7 +10,7 @@ import {
     NotFoundError,
     Param,
     Post,
-    Put,
+    Put, QueryParam,
     UnauthorizedError,
     UseAfter
 } from "routing-controllers";
@@ -118,12 +118,20 @@ export class UserController {
         summary: "Get a list of all users"
     })
     @ResponseSchema(UserDTO, {isArray: true})
-    async getAllUsers(): Promise<UserDTO[]> {
-        return (await this.userService.getAllUsers()).map(user => userToDTO(user));
+    async getAllUsers(
+        @QueryParam("pageSize", {required: false}) pageSize: number = 10,
+        @QueryParam("pageNumber", {required: false}) pageNumber: number = 1,
+        @QueryParam("includeAdmin", {required: false}) includeAdmin: boolean = true
+    ): Promise<UserDTO[]> {
+        const skip = (pageNumber - 1) * pageSize;
+        const users = await this.userService.getUsersWithFilterAndPagination(pageSize, skip, includeAdmin);
+
+        return users.map(user => userToDTO(user));
     }
 
     @Get("/me")
     @Authorized(Role.ADMIN)
+    @ResponseSchema(UserDTO)
     async getCurrentUser(@CurrentUser() id: string) {
         const user = await this.userService.getUserById(id);
 
@@ -134,14 +142,31 @@ export class UserController {
         }
     }
 
-    @Get("/:email")
+    @Get("/:identifier")
     @Authorized()
-    async getUser(@Param("email") email: string): Promise<UserDTO> {
-        const user = await this.userService.getUserByEmail(email);
-        logger.debug(`Requested user with id: ${user?._id}`);
+    async getUser(
+        @Param("identifier") identifier: string,
+        @QueryParam("auth") authType: string = 'id'
+    ): Promise<UserDTO> {
+        let user;
+
+        switch (authType.toLowerCase()) {
+            case "email":
+                user = await this.userService.getUserByEmail(identifier);
+                break;
+            case "name":
+                user = await this.userService.getUserByName(identifier);
+                break;
+            case "id":
+            default:
+                user = await this.userService.getUserById(identifier);
+                break;
+        }
+
+        logger.debug(`Requested user with ${authType}: ${identifier}, found user with id: ${user?._id}`);
 
         if (!user) {
-            throw new NotFoundError(`User with email ${email} not found.`);
+            throw new NotFoundError(`User with ${authType} ${identifier} not found.`);
         }
 
         return userToDTO(user);

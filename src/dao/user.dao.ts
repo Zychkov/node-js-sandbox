@@ -2,6 +2,7 @@ import {Collection, ObjectId} from "mongodb";
 import {Database} from "../utils/database";
 import {User} from "../models/user.model";
 import {BadRequestError, NotFoundError} from "routing-controllers";
+import {Role} from "../models/enums/role.enum";
 
 export class UserDAO {
     private collection: Collection<User>;
@@ -31,7 +32,21 @@ export class UserDAO {
         return this.collection.findOne({username});
     }
 
-    async findAll(): Promise<User[]> {
+    async findByFilterWithPagination(
+        limit: number,
+        skip: number,
+        includeAdmin: boolean
+    ): Promise<User[]> {
+        const filter: Record<string, any> = {};
+
+        if (!includeAdmin) {
+            filter.role = {$ne: Role.ADMIN}
+        }
+
+        return this.collection.find(filter).skip(skip).limit(limit).toArray();
+    }
+
+    async findAll() {
         return this.collection.find().toArray();
     }
 

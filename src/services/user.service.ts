@@ -30,8 +30,12 @@ export class UserService {
         return this.userDAO.create(newUser);
     }
 
-    async getAllUsers(): Promise<User[]> {
-        return this.userDAO.findAll();
+    async getUsersWithFilterAndPagination(
+        limit: number,
+        skip: number,
+        includeAdmin: boolean
+    ): Promise<User[]> {
+        return this.userDAO.findByFilterWithPagination(limit, skip, includeAdmin);
     }
 
     async getUserById(id: string): Promise<User | null> {
