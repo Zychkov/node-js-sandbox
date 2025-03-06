@@ -144,6 +144,7 @@ export class UserController {
 
     @Get("/:identifier")
     @Authorized()
+    @ResponseSchema(UserDTO)
     async getUser(
         @Param("identifier") identifier: string,
         @QueryParam("auth") authType: string = 'id'

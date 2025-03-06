@@ -32,13 +32,26 @@ export function setupSwagger(app: express.Express) {
                 ...schemas,
                 ErrorResponse: errorResponse,
                 UserDTO: userDTOSchema,
+            },
+            securitySchemes: {
+                bearerAuth: {
+                    type: "http",
+                    scheme: "bearer",
+                    bearerFormat: "JWT",
+                },
             }
-        }
+        },
+        security: [{bearerAuth: []}]
     };
 
     const spec = routingControllersToSpec(storage, options, swaggerSpec);
 
     logger.debug("Final spec components schemas:", Object.keys(spec.components?.schemas || {}));
 
-    app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(spec));
+    app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(spec, {
+        explorer: true,
+        swaggerOptions: {
+            persistAuthorization: true,
+        }
+    }));
 }
