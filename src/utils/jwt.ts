@@ -11,7 +11,6 @@ interface UserJwtPayload extends jwt.JwtPayload {
 }
 
 export const generateToken = (user: User) => {
-    console.log("JWT_SECRET: " + JWT_SECRET)
     return jwt.sign(
         {
             userId: user._id,

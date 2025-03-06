@@ -7,7 +7,7 @@ const logger = new Logger<ILogObj>({
     minLevel: 2,
     type: "pretty", // for color output
     prettyLogTimeZone: "local",
-    prettyLogTemplate: "{{yyyy}}-{{mm}}-{{dd}} {{hh}}:{{MM}}:{{ss}}.{{ms}} [{{logLevelName}}] ({{filePathWithLine}}) \n",
+    prettyLogTemplate: "{{yyyy}}-{{mm}}-{{dd}} {{hh}}:{{MM}}:{{ss}}.{{ms}} [{{logLevelName}}] ({{filePathWithLine}}) - ",
 });
 
 logger.attachTransport((logObj) => {

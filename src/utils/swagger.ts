@@ -6,6 +6,8 @@ import {validationMetadatasToSchemas} from "class-validator-jsonschema";
 import {UserController} from "../controllers/user.controller";
 import {OpenAPIObject, SchemaObject, ReferenceObject} from "openapi3-ts";
 import logger from "./logger";
+import {userDTOSchema} from "../models/dto/user.dto";
+import {errorResponse} from "../middlewares/error-handler.middleware";
 
 export function setupSwagger(app: express.Express) {
 
@@ -28,21 +30,15 @@ export function setupSwagger(app: express.Express) {
         components: {
             schemas: {
                 ...schemas,
-                ErrorResponse: {
-                    type: "object",
-                    properties: {
-                        statusCode: {type: "integer"},
-                        message: {type: "string"},
-                        name: {type: "string"}
-                    }
-                }
+                ErrorResponse: errorResponse,
+                UserDTO: userDTOSchema,
             }
         }
     };
 
     const spec = routingControllersToSpec(storage, options, swaggerSpec);
 
-    logger.info("Final spec components schemas:", Object.keys(spec.components?.schemas || {}));
+    logger.debug("Final spec components schemas:", Object.keys(spec.components?.schemas || {}));
 
     app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(spec));
 }

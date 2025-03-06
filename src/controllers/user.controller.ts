@@ -26,6 +26,7 @@ import {Role} from "../models/enums/role.enum";
 import {OpenAPI, ResponseSchema} from "routing-controllers-openapi";
 import {RegisterUserDTO} from "../models/dto/register-user.dto";
 import {UserCreatedResponse} from "../models/response/user-created.response";
+import bcrypt from "bcrypt";
 
 @JsonController("/users")
 @UseAfter(ErrorHandlerMiddleware)
@@ -76,10 +77,34 @@ export class UserController {
     }
 
     @Post("/login")
+    @OpenAPI({
+        summary: "User login to the systems",
+        requestBody: {
+            content: {
+                "application/json": {
+                    example: {
+                        "email": "John_doe@example.com",
+                        "password": "securepassword"
+                    }
+                }
+            }
+        },
+        responses: {
+            '200': {
+                content: {
+                    "application/json": {
+                        example: {
+                            token: "string token value"
+                        }
+                    }
+                }
+            }
+        }
+    })
     async login(@Body() loginData: { email: string; password: string }) {
         const user = await this.userService.getUserByEmail(loginData.email);
 
-        if (!user || user.password !== loginData.password) {
+        if (!user || !(await bcrypt.compare(loginData.password, user.password))) {
             throw new UnauthorizedError("Invalid email or password.");
         }
 
@@ -89,6 +114,10 @@ export class UserController {
 
     @Get("/")
     @Authorized()
+    @OpenAPI({
+        summary: "Get a list of all users"
+    })
+    @ResponseSchema(UserDTO, {isArray: true})
     async getAllUsers(): Promise<UserDTO[]> {
         return (await this.userService.getAllUsers()).map(user => userToDTO(user));
     }

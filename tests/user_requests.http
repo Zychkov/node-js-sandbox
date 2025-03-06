@@ -1,0 +1,44 @@
+### Auth request for User
+POST {{host}}users/login
+Content-Type: application/json
+
+{
+  "email": "John_doe@example.com",
+  "password": "securepassword"
+}
+> {%
+    client.global.set('token', response.body.token)
+%}
+
+### Auth request for Admin
+POST {{host}}users/login
+Content-Type: application/json
+
+{
+  "email": "admin@example.com",
+  "password": "123"
+}
+
+> {%
+    client.global.set('token', response.body.token)
+%}
+
+
+
+### GET all users
+< {%
+    request.variables.set("token", client.global.get('token'))
+%}
+GET {{host}}/users
+Authorization: Bearer {{token}}
+
+
+
+### GET user by email
+@email=admin@example.com
+
+< {%
+    request.variables.set("token", client.global.get('token'))
+%}
+GET {{host}}/users/{{email}}
+Authorization: Bearer {{token}}

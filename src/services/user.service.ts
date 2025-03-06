@@ -4,12 +4,29 @@ import {UserDAO} from "../dao/user.dao";
 import {User} from "../models/user.model";
 import {ObjectId} from "mongodb";
 import {NotFoundError} from "routing-controllers";
+import bcrypt from "bcrypt";
 
 export class UserService {
     private userDAO = new UserDAO();
 
     async register(userData: Partial<User>): Promise<User> {
-        const newUser = {...userData, status: UserStatus.ACTIVE, role: Role.USER, friends: []} as User;
+        const SALT_ROUNDS: number = process.env.SALT_ROUNDS ? parseInt(process.env.SALT_ROUNDS) : 31;
+
+        const hashedPassword: string = await bcrypt.hash(userData.password!, SALT_ROUNDS);
+
+        if (userData.username === process.env.ADMIN_NAME) {
+            userData.role = Role.ADMIN
+        } else {
+            userData.role = Role.USER
+        }
+
+        const newUser = {
+            ...userData,
+            password: hashedPassword,
+            status: UserStatus.ACTIVE,
+            role: userData.role,
+            friends: []
+        } as User;
         return this.userDAO.create(newUser);
     }
 
@@ -56,7 +73,7 @@ export class UserService {
 
         user.friends = user.friends?.filter(id => id.toString() !== friendId) || [];
 
-        await this.userDAO.updateById(userId, { friends: user.friends });
+        await this.userDAO.updateById(userId, {friends: user.friends});
         return user;
     }
 }
